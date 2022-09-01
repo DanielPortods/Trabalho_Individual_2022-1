@@ -1,0 +1,13 @@
+version: "2.6"
+
+services:
+  library_db:
+    image: postgres:alpine
+    restart: unless-stopped
+    volumes:
+      - postgres_db_data:/var/lib/postgresql/data
+    env_file:
+      - ./library_back/.env
+
+volumes:
+  postgres_db_data:
