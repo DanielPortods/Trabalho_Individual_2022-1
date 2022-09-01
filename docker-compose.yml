@@ -9,5 +9,19 @@ services:
     env_file:
       - ./library_back/.env
 
+  library_back:
+    depends_on:
+      - library_db
+    build:
+      context: .
+      dockerfile: ./library_back/Dockerfile
+    command: ["sh", "wait.sh"]
+    volumes:
+      - ./library_back:/library_back
+    ports:
+      - 8000:8000
+    env_file:
+      - ./library_back/.env
+
 volumes:
   postgres_db_data:
