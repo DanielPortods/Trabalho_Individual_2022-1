@@ -9,3 +9,5 @@ WORKDIR /library_back
 RUN python3 -m venv env
 
 RUN . env/bin/activate
+
+CMD ["sh", "wait.sh"]

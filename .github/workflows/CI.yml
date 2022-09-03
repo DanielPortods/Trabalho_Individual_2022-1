@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: "Application Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: "Define environment variables"
+        run: touch ./library_back/.env && echo -e "${{ secrets.ENVIRONMENT }}" > ./library_back/.env
+      - name: "Run docker compose"
+        run: docker compose build
+  
+  front-lint-test:
+    name: "Front Lint and Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: "Run eslint"
+        run: cd library_front/ && npm install && npm run lint
+      - name: "Run tests"
+        run: cd library_front/ && npm test
+
+  back-lint-test:
+    name: "Back Lint and Tests"
+    runs-on: ubuntu-latest
+    services:
+      library_db:
+        image: postgres
+        env:
+          POSTGRES_DB: library_db
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: password
+          POSTGRES_PORT: 5432
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: "Setup python"
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10.0'
+
+      - name: "Initial setup"
+        run: python3 -m venv env && . env/bin/activate
+      - name: "Install requirements"
+        run: pip3 install -r ./library_back/requirements.txt
+      - name: "Run pycodestyle"
+        run: pycodestyle --statistics --ignore=E501 ./library_back/
+      - name: "Migrate"
+        run: python3 ./library_back/manage.py makemigrations && python3 ./library_back/manage.py migrate
+        env:
+          POSTGRES_DB: library_db
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+      - name: "Run tests"
+        run: cd ./library_back && python3 manage.py test
+        env:
+          POSTGRES_DB: library_db
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
