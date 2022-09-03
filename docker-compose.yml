@@ -1,11 +1,11 @@
-version: "2.6"
+version: "3.8"
 
 services:
   library_db:
     image: postgres:alpine
     restart: unless-stopped
     volumes:
-      - postgres_db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     env_file:
       - ./library_back/.env
 
@@ -23,5 +23,16 @@ services:
     env_file:
       - ./library_back/.env
 
+  library_front:
+    build:
+      context: .
+      dockerfile: library_front/Dockerfile
+    volumes:
+      - ./library_front:/library_front
+    ports:
+      - 3000:3000
+    depends_on:
+      - library_back
+
 volumes:
-  postgres_db_data:
+  db_data:
