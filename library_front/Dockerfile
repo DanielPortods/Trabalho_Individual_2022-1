@@ -1,10 +1,10 @@
 FROM node:18-alpine
 
-WORKDIR /library_front
+WORKDIR /library_front/
 
 ENV PATH /library_front/node_modules/.bin:$PATH
 
-COPY library_front/* /.
+COPY library_front/ .
 
 RUN npm update -g --verbose
 

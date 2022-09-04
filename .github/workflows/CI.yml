@@ -23,6 +23,7 @@ jobs:
   
   front-lint-test:
     name: "Front Lint and Tests"
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +36,7 @@ jobs:
 
   back-lint-test:
     name: "Back Lint and Tests"
+    needs: build
     runs-on: ubuntu-latest
     services:
       library_db:

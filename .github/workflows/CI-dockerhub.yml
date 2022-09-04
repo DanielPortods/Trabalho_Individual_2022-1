@@ -1,0 +1,36 @@
+name: CI dockerhub
+
+on:
+  push:
+    branches: main
+
+jobs:
+  push-images:
+    runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions/checkout@v3
+
+        - name: "Login to Docker Hub"
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        
+        - name: "Set environment"
+          run: touch library_back/.env && echo -e "${{ secrets.ENVIRONMENT }}" > library_back/.env
+
+        - name: "Create containers"
+          run: docker compose create library_front library_back
+        
+        - name: "Build back-end image"
+          run: docker commit library_back ${{ secrets.DOCKER_HUB_USERNAME }}/library-back-end
+        
+        - name: "Push back-end image to dockerhub"
+          run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/library-back-end
+        
+        - name: "Build front-end image"
+          run: docker commit library_front ${{ secrets.DOCKER_HUB_USERNAME }}/library-front-end
+        
+        - name: "Push front-end image to dockerhub"
+          run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/library-front-end
